@@ -3,6 +3,7 @@ using AuctionService.RequestHelpers;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -50,3 +51,5 @@ catch (Exception e)
 }
 
 app.Run();
+
+
