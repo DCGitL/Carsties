@@ -1,6 +1,8 @@
+using AuctionService.Consumers;
 using AuctionService.Data;
 using AuctionService.RequestHelpers;
 using AutoMapper;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -22,6 +24,32 @@ var mappconfig = new MapperConfiguration(mc =>
 });
 IMapper mapper = mappconfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
+
+builder.Services.AddMassTransit(x =>
+{
+
+    x.AddConsumersFromNamespaceContaining<AuctionCreatedFaultConsumer>();
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("auction", false));
+    x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
+    {
+        o.QueryDelay = TimeSpan.FromSeconds(10);
+        o.UsePostgres();
+        o.UseBusOutbox();
+    });
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", 5672, "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ConfigureEndpoints(context);
+
+    });
+
+});
 //builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi("internal");

@@ -1,5 +1,6 @@
 using System;
 using AuctionService.Entities;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuctionService.Data;
@@ -24,5 +25,12 @@ public class AuctionDbContext : DbContext
             .WithOne(i => i.Auction)
             .HasForeignKey<Item>(i => i.AuctionId)
             .OnDelete(DeleteBehavior.Cascade); // ✅ ensures deletion of Item
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
+
+
     }
 }

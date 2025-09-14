@@ -1,10 +1,13 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using AutoMapper;
+using MassTransit;
 using Polly;
 using Polly.Extensions.Http;
+using SearchService.Consumers;
 using SearchService.Data;
-using SearchService.Models;
+using SearchService.RequestHelpers;
 using SearchService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +27,39 @@ builder.Services.AddHttpClient("AuctionClient", options =>
     options.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
 }).AddPolicyHandler(GetPolicy());
+var mappconfig = new MapperConfiguration(mc =>
+{
+    mc.AddProfile(new MappingProfiles());
+});
+IMapper mapper = mappconfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumersFromNamespaceContaining<AuctionCreatedConsumer>();
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("search", false));
+    x.AddConsumersFromNamespaceContaining<AuctionUpdatedConsumer>();
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("updated", false));
+    x.AddConsumersFromNamespaceContaining<AuctionDeletedConsumer>();
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("deleted", false));
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", 5672, "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+        cfg.ReceiveEndpoint("search-auction-created", e =>
+        {
+            e.UseMessageRetry(r => r.Interval(5, 5));
+            e.ConfigureConsumer<AuctionCreatedConsumer>(context);
+
+        });
+        cfg.ConfigureEndpoints(context); //automatically configure endpoints
+
+    });
+
+});
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
