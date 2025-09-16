@@ -38,10 +38,10 @@ builder.Services.AddMassTransit(x =>
 {
     x.AddConsumersFromNamespaceContaining<AuctionCreatedConsumer>();
     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("search", false));
-    x.AddConsumersFromNamespaceContaining<AuctionUpdatedConsumer>();
-    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("updated", false));
-    x.AddConsumersFromNamespaceContaining<AuctionDeletedConsumer>();
-    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("deleted", false));
+    // x.AddConsumersFromNamespaceContaining<AuctionUpdatedConsumer>();
+    // x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("updated", false));
+    // x.AddConsumersFromNamespaceContaining<AuctionDeletedConsumer>();
+    // x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("deleted", false));
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host("localhost", 5672, "/", h =>

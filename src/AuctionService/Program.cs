@@ -3,6 +3,7 @@ using AuctionService.Data;
 using AuctionService.RequestHelpers;
 using AutoMapper;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -50,6 +51,16 @@ builder.Services.AddMassTransit(x =>
     });
 
 });
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.Authority = builder.Configuration["IdentityServiceUrl"]?.ToString();
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters.ValidateAudience = false;
+    options.TokenValidationParameters.NameClaimType = "username";
+});
+
 //builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi("internal");
@@ -62,7 +73,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-
+app.UseAuthentication();
 
 app.UseAuthorization();
 

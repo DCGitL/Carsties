@@ -9,6 +9,12 @@
 			"type": "dotnet",
 			"request": "launch",
 			"projectPath": "${workspaceFolder}/src/AuctionService/AuctionService.csproj"
+		},
+		{
+			"name": "C#: SearchService Debug",
+			"type": "dotnet",
+			"request": "launch",
+			"projectPath": "${workspaceFolder}/src/SearchService/SearchService.csproj"
 		}
 	]
 }
