@@ -82,6 +82,7 @@ internal static class HostingExtensions
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
+            options.Cookie.Name = "CartAuctionCookie";
             options.Cookie.SameSite = SameSiteMode.Lax;
         });
 
