@@ -2,7 +2,9 @@
 using System.Net;
 using System.Net.Http.Headers;
 using AutoMapper;
+using HealthService;
 using MassTransit;
+using MongoDB.Driver;
 using Polly;
 using Polly.Extensions.Http;
 using SearchService.Consumers;
@@ -44,11 +46,8 @@ builder.Services.AddMassTransit(x =>
     // x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("deleted", false));
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", 5672, "/", h =>
-        {
-            h.Username("guest");
-            h.Password("guest");
-        });
+        cfg.Host(new Uri(builder.Configuration.GetConnectionString("RabbitMQ")!));
+        // h.Username("guest;
         cfg.ReceiveEndpoint("search-auction-created", e =>
         {
             e.UseMessageRetry(r => r.Interval(5, 5));
@@ -62,6 +61,27 @@ builder.Services.AddMassTransit(x =>
 });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks()
+    .AddMongoDb(sp =>
+    {
+        var MongoDbConnection = builder.Configuration.GetConnectionString("MongoDbConnection");
+        return new MongoClient(MongoDbConnection!);
+    },
+    name: "MongoDb",
+    tags: new[] { "all", "db" })
+   .AddRabbitMQ(async (sp) =>
+    {
+        var factory = new RabbitMQ.Client.ConnectionFactory()
+        {
+            Uri = new Uri(builder.Configuration.GetConnectionString("RabbitMQ")!)
+        };
+        return await factory.CreateConnectionAsync();
+    },
+     name: "RabbitMQ",
+     failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
+     tags: new[] { "mq", "all" });
+
+builder.Services.AddScoped<IHealthStatusService, HealthStatusService>();
 
 var app = builder.Build();
 

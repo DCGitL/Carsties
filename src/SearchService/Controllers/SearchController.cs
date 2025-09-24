@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using HealthService;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Entities;
 using SearchService.Models;
@@ -9,8 +10,9 @@ namespace SearchService.Controllers;
 
 [ApiController]
 [Route("api/search")]
-public class SearchController : ControllerBase
+public class SearchController(IHealthStatusService _healthStatusService) : ControllerBase
 {
+
 
     [HttpGet]
     public async Task<IActionResult> SearchItems([FromQuery] SearchParams searchParams)
@@ -62,6 +64,14 @@ public class SearchController : ControllerBase
             pageCount = results.PageCount,
             totalCount = results.TotalCount
         });
+    }
+
+    [HttpGet("healthstatus")]
+
+    public async Task<IActionResult> HealthCheck(string? tag = null)
+    {
+        var result = await _healthStatusService.GetHealthStatusAsync(tag);
+        return Ok(result);
     }
 
 }

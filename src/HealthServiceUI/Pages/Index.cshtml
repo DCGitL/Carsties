@@ -1,0 +1,11 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Health check status</h1>
+
+</div>
+<iframe onload="this.width= screen.width; this.height=screen.height" src="http://localhost:5207/health-ui"></iframe>

@@ -5,6 +5,7 @@ using AuctionService.Entities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Contracts;
+using HealthService;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,12 +20,14 @@ public class AuctionController : ControllerBase
     private readonly AuctionDbContext _context;
     private readonly IMapper _mapper;
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IHealthStatusService _healthStatusService;
 
-    public AuctionController(AuctionDbContext context, IMapper mapper, IPublishEndpoint publishEndpoint)
+    public AuctionController(AuctionDbContext context, IMapper mapper, IPublishEndpoint publishEndpoint, IHealthStatusService healthStatusService)
     {
         _context = context;
         _mapper = mapper;
         _publishEndpoint = publishEndpoint;
+        _healthStatusService = healthStatusService;
     }
 
 
@@ -152,5 +155,13 @@ public class AuctionController : ControllerBase
         return BadRequest($"Auction with id {id} could not delete");
     }
 
+
+    [HttpGet("healthstatus")]
+    [AllowAnonymous]
+    public async Task<IActionResult> HealthCheck(string? tag = null)
+    {
+        var result = await _healthStatusService.GetHealthStatusAsync(tag);
+        return Ok(result);
+    }
 
 }

@@ -5,6 +5,15 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "Containers .NET Attach (Preview)",
+			"type": "docker",
+			"request": "attach",
+			"platform": "netCore",
+			"sourceFileMap": {
+				"/app": "${workspaceFolder}"
+			}
+		},
+		{
 			"name": "C#: AuctionService Debug",
 			"type": "dotnet",
 			"request": "launch",

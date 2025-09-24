@@ -2,8 +2,10 @@ using AuctionService.Consumers;
 using AuctionService.Data;
 using AuctionService.RequestHelpers;
 using AutoMapper;
+using HealthService;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 using Microsoft.EntityFrameworkCore;
 
 
@@ -16,7 +18,25 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AuctionDbContext>(opt =>
 {
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+
 });
+
+builder.Services.AddHealthChecks()
+
+    .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "PostgreSQL", tags: new[] { "All", "postgresql" })
+    .AddRabbitMQ(async (sp) =>
+    {
+        var factory = new RabbitMQ.Client.ConnectionFactory()
+        {
+            Uri = new Uri(builder.Configuration.GetConnectionString("RabbitMQ")!)
+        };
+        return await factory.CreateConnectionAsync();
+
+    },
+     name: "RabbitMQ",
+     failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
+     tags: new[] { "rabbitmq", "All" });
+
 
 
 var mappconfig = new MapperConfiguration(mc =>
@@ -40,17 +60,16 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", 5672, "/", h =>
-        {
-            h.Username("guest");
-            h.Password("guest");
-        });
+
+        cfg.Host(new Uri(builder.Configuration.GetConnectionString("RabbitMQ")!));
 
         cfg.ConfigureEndpoints(context);
 
     });
 
 });
+
+builder.Services.AddScoped<IHealthStatusService, HealthStatusService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
@@ -72,6 +91,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
 
 app.UseAuthentication();
 
