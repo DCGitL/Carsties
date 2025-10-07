@@ -68,7 +68,7 @@ internal static class HostingExtensions
 
                 if (builder.Environment.IsEnvironment("Docker"))
                 {
-                    options.IssuerUri = "https://localhost:5001";
+                    options.IssuerUri = "http://localhost:5001";
                 }
 
                 // Use a large chunk size for diagnostic data in development where it will be redirected to a local file.
