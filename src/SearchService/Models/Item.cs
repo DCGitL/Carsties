@@ -17,7 +17,7 @@ public class Item : Entity
     public required string Color { get; set; }
     public int Mileage { get; set; }
     public string? ImageUrl { get; set; }
-    public required string Status { get; set; }
+    public string Status { get; set; } = default!;
 
     public int ReservePrice { get; set; }
     public int? SoldAmount { get; set; }

@@ -22,10 +22,11 @@ public class BidPlacedConsumer : IConsumer<BidPlaced>
         {
             if (auction.CurrentHighBid == null
             || context.Message.BidStatus!.Contains("Accepted")
-            && context.Message.Amount > auction.CurrentHighBid)
+            && (!auction.CurrentHighBid.HasValue || (auction.CurrentHighBid.HasValue && context.Message.Amount > auction.CurrentHighBid.Value)))
             {
                 auction.CurrentHighBid = context.Message.Amount;
                 await _dbContext.SaveChangesAsync();
+                Console.WriteLine($"Bid place auction updated auctionId: {auction.Id}");
 
             }
 

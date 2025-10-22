@@ -33,7 +33,8 @@ public class CheckAuctionFinished : BackgroundService
     private async Task CheckAuctions(CancellationToken stoppingToken)
     {
         var finishedAuctions = await DB.Find<Auction>()
-        .Match(x => x.AuctionEnd <= DateTime.UtcNow && !x.Finished)
+        .Match(x => x.AuctionEnd <= DateTime.UtcNow)
+        .Match(x => !x.Finished)
         .ExecuteAsync(stoppingToken);
 
         if (finishedAuctions.Count == 0)
@@ -57,7 +58,7 @@ public class CheckAuctionFinished : BackgroundService
             {
                 ItemSold = winningBid != null,
                 AuctionId = auction.ID,
-                Winner = winningBid?.Bidder,
+                Winner = winningBid == null ? string.Empty : winningBid.Bidder,
                 Amount = winningBid?.Amount,
                 Seller = auction.Seller
             }, stoppingToken);

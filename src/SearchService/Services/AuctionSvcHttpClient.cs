@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MongoDB.Entities;
 using SearchService.Models;
 
@@ -28,9 +30,15 @@ public class AuctionSvcHttpClient : IAuctionSvcHttpClient
         .ExecuteFirstAsync();
         var client = _httpClient.CreateClient("AuctionClient");
         var response = await client.GetAsync($"/api/auctions?date={lastUpdated}");
+        // var  response1 = await  client.GetFromJsonAsync<List<Item>>($"/api/auctions?date={lastUpdated}")
         if (response.IsSuccessStatusCode)
         {
-            var result = await response.Content.ReadFromJsonAsync<List<Item>>();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
+            };
+            var result = await response.Content.ReadFromJsonAsync<List<Item>>(options);
             return result;
         }
 

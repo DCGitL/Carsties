@@ -10,7 +10,8 @@ public static class MapperExtension
     {
         return new BidDto
         {
-            Id = bid.AuctionId,
+            Id = bid.ID,
+            AuctionId = bid.AuctionId,
             Bidder = bid.Bidder,
             Amount = bid.Amount,
             BidStatus = bid.BidStatus.ToString(),
@@ -29,6 +30,7 @@ public static class MapperExtension
     {
         return new BidPlaced
         {
+            Id = bid.ID,
             AuctionId = bid.AuctionId,
             BidStatus = bid.BidStatus.ToString(),
             Bidder = bid.Bidder,
